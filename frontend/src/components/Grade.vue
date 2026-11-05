@@ -7,11 +7,13 @@ const props = defineProps({
 });
 
 const grade = ref(Array.from({ length: tam }, () => Array(tam).fill(false)));
+const emit = defineEmits(["alterada"]);
 
 function adicionarCelula(linha, coluna) {
   if(props.simulando) return;
 
   grade.value[linha][coluna] = !grade.value[linha][coluna];
+  emit("alterada");
 }
 
 function obterGrade() {
