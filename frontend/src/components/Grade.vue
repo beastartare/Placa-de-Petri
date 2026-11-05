@@ -2,11 +2,30 @@
 import { ref } from "vue";
 
 const tam = 10;
+const props = defineProps({
+  simulando: Boolean,
+});
+
 const grade = ref(Array.from({ length: tam }, () => Array(tam).fill(false)));
 
 function adicionarCelula(linha, coluna) {
+  if(props.simulando) return;
+
   grade.value[linha][coluna] = !grade.value[linha][coluna];
 }
+
+function obterGrade() {
+  return grade.value.map((linha) => [...linha]);
+}
+
+function atualizarGrade(novaGrade) {
+  grade.value = novaGrade;
+}
+
+defineExpose({
+  obterGrade,
+  atualizarGrade,
+});
 </script>
 
 <template>
