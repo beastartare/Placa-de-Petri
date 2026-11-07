@@ -13,10 +13,28 @@ const mensagem = ref("");
 let intervalo = null;
 let processando = false;
 const numGeracoes = ref(0);
+const numCelulasVivas = ref(0);
+
+function contarCelulasVivas(grade) {
+  let quantidade = 0;
+
+  for (let linha = 0; linha < grade.length; linha++) {
+    for (let coluna = 0; coluna < grade[linha].length; coluna++) {
+      if (grade[linha][coluna] === true) {
+        quantidade++;
+      }
+    }
+  }
+
+  return quantidade;
+}
 
 function alterarConfiguracao() {
   numGeracoes.value = 0;
   mensagem.value = "";
+
+  let gradeAtual = gradeRef.value.obterGrade();
+  numCelulasVivas.value = contarCelulasVivas(gradeAtual);
 }
 
 function pausarSimulacao() {
@@ -43,6 +61,7 @@ function reiniciarSimulacao() {
 
   gradeRef.value.atualizarGrade(gradeVazia);
   numGeracoes.value = 0;
+  numCelulasVivas.value = 0;
   mensagem.value = "";
 }
 
@@ -55,6 +74,7 @@ async function executarGeracao() {
     const gradeAtual = gradeRef.value.obterGrade();
     const proximaGrade = await evoluirGrade(gradeAtual);
     gradeRef.value.atualizarGrade(proximaGrade);
+    numCelulasVivas.value = contarCelulasVivas(proximaGrade);
     numGeracoes.value++;
     console.log(numGeracoes.value);
 
@@ -115,7 +135,10 @@ onBeforeUnmount(() => {
         </Button>
       </div>
       <aside class="metricas">
-        <Metrics :numGeracoes="numGeracoes" />
+        <Metrics
+          :numGeracoes="numGeracoes"
+          :numCelulasVivas="numCelulasVivas"
+        />
       </aside>
     </div>
   </div>

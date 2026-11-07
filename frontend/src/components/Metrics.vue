@@ -1,6 +1,6 @@
 <script>
 export default {
-  props: ["numGeracoes"],
+  props: ["numGeracoes", "numCelulasVivas"],
 };
 </script>
 
@@ -8,6 +8,7 @@ export default {
   <div class="metrics">
     <h1>Métricas</h1>
     <p>Geração atual: {{ numGeracoes }}</p>
+    <p>Células vivas: {{ numCelulasVivas }}</p>
   </div>
 </template>
 
