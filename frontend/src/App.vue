@@ -25,8 +25,29 @@ function pausarSimulacao() {
   simulando.value = false;
 }
 
+function reiniciarSimulacao() {
+  pausarSimulacao();
+
+  let gradeAtual = gradeRef.value.obterGrade();
+  let gradeVazia = [];
+
+  for (let linha = 0; linha < gradeAtual.length; linha++) {
+    let novaLinha = [];
+
+    for (let coluna = 0; coluna < gradeAtual[linha].length; coluna++) {
+      novaLinha.push(false);
+    }
+
+    gradeVazia.push(novaLinha);
+  }
+
+  gradeRef.value.atualizarGrade(gradeVazia);
+  numGeracoes.value = 0;
+  mensagem.value = "";
+}
+
 async function executarGeracao() {
-  if(processando || !simulando.value) return;
+  if(processando) return;
 
   processando = true;
 
@@ -86,6 +107,12 @@ onBeforeUnmount(() => {
         </main>
         <Button @click="iniciarSimulacao">{{ simulando ? "Pausar simulação" : "Iniciar Simulação"}}</Button>
         <p v-if="mensagem" class="mensagem"> {{ mensagem }} </p>
+        <Button v-if="!simulando" @click="executarGeracao">
+          Avançar uma geração
+        </Button>
+        <Button @click="reiniciarSimulacao">
+          Reiniciar
+        </Button>
       </div>
       <aside class="metricas">
         <Metrics />
