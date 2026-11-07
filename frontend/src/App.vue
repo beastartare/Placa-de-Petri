@@ -115,7 +115,7 @@ onBeforeUnmount(() => {
         </Button>
       </div>
       <aside class="metricas">
-        <Metrics />
+        <Metrics :numGeracoes="numGeracoes" />
       </aside>
     </div>
   </div>
