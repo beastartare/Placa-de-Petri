@@ -1,4 +1,3 @@
-button
 <script setup>
 defineEmits(["click"]);
 </script>
@@ -35,12 +34,10 @@ defineEmits(["click"]);
   text-align: center;
   cursor: pointer;
   margin-top: 12px;
-
   transition:
     background-color 0.2s ease,
     transform 0.2s ease,
     box-shadow 0.2s ease;
-
   box-shadow: 0 3px 6px rgba(210, 0, 102, 0.15);
 }
 

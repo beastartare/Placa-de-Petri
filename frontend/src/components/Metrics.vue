@@ -7,12 +7,10 @@ export default {
 <template>
   <div class="metrics">
     <h2>Métricas</h2>
-
     <div class="metric-item">
       <p>Geração atual</p>
       <strong>{{ numGeracoes }}</strong>
     </div>
-
     <div class="metric-item">
       <p>Células vivas</p>
       <strong>{{ numCelulasVivas }}</strong>

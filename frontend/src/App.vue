@@ -61,7 +61,6 @@ function reiniciarSimulacao() {
   pausarSimulacao();
 
   const gradeAtual = gradeRef.value.obterGrade();
-
   const gradeVazia = gradeAtual.map((linha) =>
     linha.map(() => false)
   );
@@ -71,7 +70,6 @@ function reiniciarSimulacao() {
   numGeracoes.value = 0;
   numCelulasVivas.value = 0;
   mensagem.value = "";
-
   editando.value = true;
 }
 
@@ -83,7 +81,6 @@ async function executarGeracao() {
   try {
     const gradeAtual = gradeRef.value.obterGrade();
     const proximaGrade = await evoluirGrade(gradeAtual);
-
     gradeRef.value.atualizarGrade(proximaGrade);
 
     numCelulasVivas.value = contarCelulasVivas(proximaGrade);
@@ -95,15 +92,11 @@ async function executarGeracao() {
 
     if (!existemCelulasVivas) {
       pausarSimulacao();
-
-      mensagem.value =
-        "A simulação foi encerrada: não há mais células vivas.";
+      mensagem.value ="A simulação foi encerrada: não há mais células vivas.";
     }
   } catch (erro) {
     console.error("Erro na simulação:", erro);
-
     mensagem.value = "Ocorreu um erro ao evoluir a grade.";
-
     pausarSimulacao();
   } finally {
     processando = false;
@@ -115,7 +108,6 @@ function iniciarSimulacao() {
     pausarSimulacao();
     return;
   }
-
   if (editando.value) {
     finalizarEdicao();
   }
@@ -139,41 +131,25 @@ onBeforeUnmount(() => {
       <header class="cabecalho">
         <div class="titulo">
           <h1>Placa de Petri</h1>
-          <p>
-            Configure sua grade e observe a evolução das células.
-          </p>
+          <p>Configure sua grade e observe a evolução das células.</p>
         </div>
-
-        <div
-          class="status"
+        <div class="status"
           :class="{
             ativo: simulando,
             editando: editando,
           }"
         >
           <span class="status-ponto"></span>
-
-          {{
-            simulando
-              ? "Simulação ativa"
-              : editando
-                ? "Modo de edição"
-                : "Simulação pausada"
-          }}
+          {{ simulando ? "Simulação ativa" : editando ? "Modo de edição" : "Simulação pausada"}}
         </div>
       </header>
 
       <div class="area-principal">
-        
         <section class="area-grade">
-                <div
-        v-if="mensagem"
-        class="mensagem"
-      >
-        <span class="mensagem-icone">!</span>
-
-        <p>{{ mensagem }}</p>
-      </div>
+          <div v-if="mensagem" class="mensagem">
+            <span class="mensagem-icone">!</span>
+            <p>{{ mensagem }}</p>
+          </div>
           <main class="grade-container">
             <Grade
               ref="gradeRef"
@@ -189,54 +165,24 @@ onBeforeUnmount(() => {
             <h2>Painel de controle</h2>
             <p>Gerencie a simulação.</p>
           </div>
-
           <div class="metricas">
-            <Metrics
-              :numGeracoes="numGeracoes"
-              :numCelulasVivas="numCelulasVivas"
-            />
+            <Metrics :numGeracoes="numGeracoes" :numCelulasVivas="numCelulasVivas"/>
           </div>
-
           <div class="controles">
-            <span class="titulo-controles">
-              AÇÕES
-            </span>
-
-            <Button
-              v-if="!editando"
-              @click="iniciarSimulacao"
-            >
-              {{
-                simulando
-                  ? "Pausar simulação"
-                  : "Iniciar simulação"
-              }}
+            <span class="titulo-controles">AÇÕES</span>
+            <Button v-if="!editando" @click="iniciarSimulacao">
+              {{ simulando ? "Pausar simulação" : "Iniciar simulação" }}
             </Button>
-
-            <Button
-              v-if="!simulando && !editando"
-              @click="executarGeracao"
-            >
+            <Button v-if="!simulando && !editando" @click="executarGeracao">
               Avançar uma geração
             </Button>
-
-            <Button
-              v-if="!simulando && !editando"
-              @click="editarConfiguracao"
-            >
+            <Button v-if="!simulando && !editando" @click="editarConfiguracao">
               Editar grade
             </Button>
-
-            <Button
-              v-if="editando"
-              @click="finalizarEdicao"
-            >
+            <Button v-if="editando" @click="finalizarEdicao">
               Finalizar edição
             </Button>
-
-            <Button
-              @click="reiniciarSimulacao"
-            >
+            <Button @click="reiniciarSimulacao">
               Reiniciar
             </Button>
           </div>

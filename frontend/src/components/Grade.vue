@@ -34,8 +34,8 @@ function atualizarGrade(novaGrade) {
 }
 
 function alterarTamanho() {
-  if (tam.value < 1) {
-    tam.value = 1;
+  if (tam.value < 3) {
+    tam.value = 3;
   }
 
   if (tam.value > 30) {
@@ -83,12 +83,8 @@ defineExpose({
     <div class="configuracao">
       <div class="configuracao-info">
         <span class="configuracao-titulo">Dimensão da grade</span>
-
-        <span class="configuracao-descricao">
-          {{ tam }} × {{ tam }} células
-        </span>
+        <span class="configuracao-descricao">{{ tam }} × {{ tam }} células</span>
       </div>
-
       <div class="seletor-tamanho">
         <button
           type="button"
@@ -99,9 +95,7 @@ defineExpose({
         >
           −
         </button>
-
         <span class="valor-tamanho">{{ tam }}</span>
-
         <button
           type="button"
           class="botao-tamanho"
@@ -113,7 +107,6 @@ defineExpose({
         </button>
       </div>
     </div>
-
     <div
       class="tabuleiro"
       :class="{ bloqueado: props.simulando || !props.editando }"
@@ -131,13 +124,11 @@ defineExpose({
         ></div>
       </template>
     </div>
-
     <div class="legenda">
       <div class="item-legenda">
         <span class="amostra"></span>
         <span>Célula morta</span>
       </div>
-
       <div class="item-legenda">
         <span class="amostra viva"></span>
         <span>Célula viva</span>
