@@ -90,7 +90,7 @@ defineExpose({
           type="button"
           class="botao-tamanho"
           @click="diminuirTamanho"
-          :disabled="tam <= 1 || props.simulando || !props.editando"
+          :disabled="tam <= 3 || props.simulando || !props.editando"
           aria-label="Diminuir tamanho da grade"
         >
           −
