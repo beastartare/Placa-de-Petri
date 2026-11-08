@@ -115,11 +115,14 @@ function iniciarSimulacao() {
     pausarSimulacao();
     return;
   }
+
   if (editando.value) {
     finalizarEdicao();
   }
+
   simulando.value = true;
   mensagem.value = "";
+
   intervalo = setInterval(() => {
     executarGeracao();
   }, 500);
@@ -133,110 +136,267 @@ onBeforeUnmount(() => {
 <template>
   <div class="app">
     <div class="conteudo">
-      <div class="simulador">
-        <header>
-          <h1>Simulador de Placa de Petri</h1>
-          <p>Instruções: adicione uma célula em um dos campos abaixo.</p>
-        </header>
-        <main>
-          <Grade
-            ref="gradeRef"
-            :simulando="simulando"
-            :editando="editando"
-            @alterada="alterarConfiguracao"
-          />
-        </main>
+      <header class="cabecalho">
+        <div class="titulo">
+          <h1>Placa de Petri</h1>
+          <p>
+            Configure sua grade e observe a evolução das células.
+          </p>
+        </div>
 
-        <Button v-if="!editando" @click="iniciarSimulacao">
-          {{ simulando ? "Pausar simulação" : "Iniciar simulação" }}
-        </Button>
-
-        <Button
-          v-if="!simulando && !editando"
-          @click="executarGeracao"
+        <div
+          class="status"
+          :class="{
+            ativo: simulando,
+            editando: editando,
+          }"
         >
-          Avançar uma geração
-        </Button>
+          <span class="status-ponto"></span>
 
-        <Button
-          v-if="!simulando && !editando"
-          @click="editarConfiguracao"
-        >
-          Editar grade
-        </Button>
+          {{
+            simulando
+              ? "Simulação ativa"
+              : editando
+                ? "Modo de edição"
+                : "Simulação pausada"
+          }}
+        </div>
+      </header>
 
-        <Button
-          v-if="editando"
-          @click="finalizarEdicao"
-        >
-          Finalizar edição
-        </Button>
+      <div class="area-principal">
+        
+        <section class="area-grade">
+                <div
+        v-if="mensagem"
+        class="mensagem"
+      >
+        <span class="mensagem-icone">!</span>
 
-        <Button @click="reiniciarSimulacao">
-          Reiniciar
-        </Button>
-
-        <p v-if="mensagem" class="mensagem">
-          {{ mensagem }}
-        </p>
+        <p>{{ mensagem }}</p>
       </div>
+          <main class="grade-container">
+            <Grade
+              ref="gradeRef"
+              :simulando="simulando"
+              :editando="editando"
+              @alterada="alterarConfiguracao"
+            />
+          </main>
+        </section>
 
-      <aside class="metricas">
-        <Metrics
-          :numGeracoes="numGeracoes"
-          :numCelulasVivas="numCelulasVivas"
-        />
-      </aside>
+        <aside class="painel-lateral">
+          <div class="painel-titulo">
+            <h2>Painel de controle</h2>
+            <p>Gerencie a simulação.</p>
+          </div>
+
+          <div class="metricas">
+            <Metrics
+              :numGeracoes="numGeracoes"
+              :numCelulasVivas="numCelulasVivas"
+            />
+          </div>
+
+          <div class="controles">
+            <span class="titulo-controles">
+              AÇÕES
+            </span>
+
+            <Button
+              v-if="!editando"
+              @click="iniciarSimulacao"
+            >
+              {{
+                simulando
+                  ? "Pausar simulação"
+                  : "Iniciar simulação"
+              }}
+            </Button>
+
+            <Button
+              v-if="!simulando && !editando"
+              @click="executarGeracao"
+            >
+              Avançar uma geração
+            </Button>
+
+            <Button
+              v-if="!simulando && !editando"
+              @click="editarConfiguracao"
+            >
+              Editar grade
+            </Button>
+
+            <Button
+              v-if="editando"
+              @click="finalizarEdicao"
+            >
+              Finalizar edição
+            </Button>
+
+            <Button
+              @click="reiniciarSimulacao"
+            >
+              Reiniciar
+            </Button>
+          </div>
+        </aside>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .app {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
   min-height: 100vh;
-}
-
-header {
-  text-align: left;
-  margin-bottom: 30px;
-}
-
-main {
   width: 100%;
+  padding: 30px;
+  box-sizing: border-box;
   display: flex;
   justify-content: center;
 }
 
 .conteudo {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   width: 100%;
   max-width: 1100px;
-  gap: 40px;
 }
 
-.simulador {
+.cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.cabecalho h1 {
+  font-size: 28px;
+  margin: 0;
+  color: white;
+}
+
+.cabecalho p {
+  font-size: 14px;
+  color: #777080;
+  margin-top: 8px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  background: #eeeaf2;
+  color: #777080;
+  font-size: 13px;
+}
+
+.status-ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #9992a4;
+}
+
+.status.ativo {
+  background: #e5f7ed;
+  color: #16844a;
+}
+
+.status.ativo .status-ponto {
+  background: #22b66e;
+}
+
+.status.editando {
+  background: #fce7f1;
+  color: #b80059;
+}
+
+.status.editando .status-ponto {
+  background: #d20066;
+}
+
+.area-principal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 30px;
+  align-items: start;
+}
+
+.area-grade {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #eee9f2;
+  border-radius: 12px;
+}
+
+.grade-container {
+  width: 100%;
+  min-height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.painel-lateral {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  flex: 1;
+  gap: 20px;
+  padding: 20px;
+  border: 1px solid #eee9f2;
+  border-radius: 12px;
+}
+
+.painel-titulo h2 {
+  font-size: 18px;
+  margin: 0;
+  color: white;
+}
+
+.painel-titulo p {
+  font-size: 13px;
+  color: #91899d;
+  margin-top: 6px;
 }
 
 .metricas {
-  width: 250px;
-  flex-shrink: 0;
+  width: 100%;
+}
+
+.controles {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-top: 15px;
+  border-top: 1px solid #eee9f2;
+}
+
+.titulo-controles {
+  font-size: 11px;
+  font-weight: 700;
+  color: #91899d;
+  margin-bottom: 5px;
 }
 
 .mensagem {
-  margin-top: 15px;
-  padding: 12px;
-  color: #b00020;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 12px 15px;
+  border-radius: 8px;
+  background: #fce7f1;
+  color: #a50050;
+  font-size: 13px;
+}
+
+.mensagem-icone {
   font-weight: bold;
-  text-align: center;
+}
+
+.mensagem p {
+  margin: 0;
 }
 </style>
