@@ -9,9 +9,11 @@ import Metrics from "./components/Metrics.vue";
 const gradeRef = ref(null);
 const simulando = ref(false);
 const mensagem = ref("");
+const editando = ref(true);
 
 let intervalo = null;
 let processando = false;
+
 const numGeracoes = ref(0);
 const numCelulasVivas = ref(0);
 
@@ -33,8 +35,20 @@ function alterarConfiguracao() {
   numGeracoes.value = 0;
   mensagem.value = "";
 
-  let gradeAtual = gradeRef.value.obterGrade();
+  const gradeAtual = gradeRef.value.obterGrade();
+
   numCelulasVivas.value = contarCelulasVivas(gradeAtual);
+}
+
+function editarConfiguracao() {
+  if (simulando.value) return;
+
+  editando.value = true;
+  mensagem.value = "";
+}
+
+function finalizarEdicao() {
+  editando.value = false;
 }
 
 function pausarSimulacao() {
@@ -46,50 +60,50 @@ function pausarSimulacao() {
 function reiniciarSimulacao() {
   pausarSimulacao();
 
-  let gradeAtual = gradeRef.value.obterGrade();
-  let gradeVazia = [];
+  const gradeAtual = gradeRef.value.obterGrade();
 
-  for (let linha = 0; linha < gradeAtual.length; linha++) {
-    let novaLinha = [];
-
-    for (let coluna = 0; coluna < gradeAtual[linha].length; coluna++) {
-      novaLinha.push(false);
-    }
-
-    gradeVazia.push(novaLinha);
-  }
+  const gradeVazia = gradeAtual.map((linha) =>
+    linha.map(() => false)
+  );
 
   gradeRef.value.atualizarGrade(gradeVazia);
+
   numGeracoes.value = 0;
   numCelulasVivas.value = 0;
   mensagem.value = "";
+
+  editando.value = true;
 }
 
 async function executarGeracao() {
-  if(processando) return;
+  if (processando || editando.value) return;
 
   processando = true;
 
   try {
     const gradeAtual = gradeRef.value.obterGrade();
     const proximaGrade = await evoluirGrade(gradeAtual);
+
     gradeRef.value.atualizarGrade(proximaGrade);
+
     numCelulasVivas.value = contarCelulasVivas(proximaGrade);
     numGeracoes.value++;
-    console.log(numGeracoes.value);
 
     const existemCelulasVivas = proximaGrade.some(
-      linha => linha.some(celula => celula)
+      (linha) => linha.some((celula) => celula)
     );
 
-    if(!existemCelulasVivas) {
+    if (!existemCelulasVivas) {
       pausarSimulacao();
-      mensagem.value = "A simulação foi encerrada: não há mais células vivas.";
-    }
 
-  } catch(erro) {
-    console.error("Erro na simulação: ", erro);
+      mensagem.value =
+        "A simulação foi encerrada: não há mais células vivas.";
+    }
+  } catch (erro) {
+    console.error("Erro na simulação:", erro);
+
     mensagem.value = "Ocorreu um erro ao evoluir a grade.";
+
     pausarSimulacao();
   } finally {
     processando = false;
@@ -97,21 +111,23 @@ async function executarGeracao() {
 }
 
 function iniciarSimulacao() {
-  if(simulando.value) {
+  if (simulando.value) {
     pausarSimulacao();
-  } else {
-    simulando.value = true;
-    mensagem.value = "";
-    intervalo = setInterval(() => {
-      executarGeracao();
-    }, 500);
+    return;
   }
+  if (editando.value) {
+    finalizarEdicao();
+  }
+  simulando.value = true;
+  mensagem.value = "";
+  intervalo = setInterval(() => {
+    executarGeracao();
+  }, 500);
 }
 
 onBeforeUnmount(() => {
   clearInterval(intervalo);
 });
-
 </script>
 
 <template>
@@ -123,17 +139,48 @@ onBeforeUnmount(() => {
           <p>Instruções: adicione uma célula em um dos campos abaixo.</p>
         </header>
         <main>
-          <Grade ref="gradeRef" :simulando="simulando" @alterada="alterarConfiguracao"/>
+          <Grade
+            ref="gradeRef"
+            :simulando="simulando"
+            :editando="editando"
+            @alterada="alterarConfiguracao"
+          />
         </main>
-        <Button @click="iniciarSimulacao">{{ simulando ? "Pausar simulação" : "Iniciar Simulação"}}</Button>
-        <p v-if="mensagem" class="mensagem"> {{ mensagem }} </p>
-        <Button v-if="!simulando" @click="executarGeracao">
+
+        <Button v-if="!editando" @click="iniciarSimulacao">
+          {{ simulando ? "Pausar simulação" : "Iniciar simulação" }}
+        </Button>
+
+        <Button
+          v-if="!simulando && !editando"
+          @click="executarGeracao"
+        >
           Avançar uma geração
         </Button>
+
+        <Button
+          v-if="!simulando && !editando"
+          @click="editarConfiguracao"
+        >
+          Editar grade
+        </Button>
+
+        <Button
+          v-if="editando"
+          @click="finalizarEdicao"
+        >
+          Finalizar edição
+        </Button>
+
         <Button @click="reiniciarSimulacao">
           Reiniciar
         </Button>
+
+        <p v-if="mensagem" class="mensagem">
+          {{ mensagem }}
+        </p>
       </div>
+
       <aside class="metricas">
         <Metrics
           :numGeracoes="numGeracoes"
@@ -186,10 +233,10 @@ main {
 }
 
 .mensagem {
-    margin-top: 15px;
-    padding: 12px;
-    color: #b00020;
-    font-weight: bold;
-    text-align: center;
+  margin-top: 15px;
+  padding: 12px;
+  color: #b00020;
+  font-weight: bold;
+  text-align: center;
 }
 </style>
