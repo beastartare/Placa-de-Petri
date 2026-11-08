@@ -1,12 +1,17 @@
 <script setup>
 import { ref } from "vue";
 
-const tam = 10;
+const tam = ref(10);
 const props = defineProps({
   simulando: Boolean,
 });
 
-const grade = ref(Array.from({ length: tam }, () => Array(tam).fill(false)));
+const grade = ref(
+  Array.from(
+    { length: tam.value },
+    () => Array(tam.value).fill(false)
+  )
+);
 const emit = defineEmits(["alterada"]);
 
 function adicionarCelula(linha, coluna) {
@@ -24,6 +29,31 @@ function atualizarGrade(novaGrade) {
   grade.value = novaGrade;
 }
 
+function alterarTamanho() {
+  if (tam.value < 1) {
+    tam.value = 1;
+  }
+
+  if (tam.value > 30) {
+    tam.value = 30;
+  }
+
+  let novaGrade = [];
+
+  for (let linha = 0; linha < tam.value; linha++) {
+    let novaLinha = [];
+
+    for (let coluna = 0; coluna < tam.value; coluna++) {
+      novaLinha.push(false);
+    }
+
+    novaGrade.push(novaLinha);
+  }
+
+  grade.value = novaGrade;
+  emit("alterada");
+}
+
 defineExpose({
   obterGrade,
   atualizarGrade,
@@ -33,6 +63,18 @@ defineExpose({
 <template>
   <div class="grade">
     <h3>Grade:</h3>
+
+    <label>
+      Tamanho da grade:
+      <input
+        type="number"
+        v-model="tam"
+        min="1"
+        max="30"
+        @change="alterarTamanho"
+        :disabled="props.simulando"
+      />
+    </label>
 
     <div
       class="tabuleiro"
