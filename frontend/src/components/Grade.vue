@@ -34,11 +34,11 @@ function atualizarGrade(novaGrade) {
 }
 
 function alterarTamanho() {
-  if (tam.value < 3) {
+  if (tam.value <= 3) {
     tam.value = 3;
   }
 
-  if (tam.value > 30) {
+  if (tam.value >= 30) {
     tam.value = 30;
   }
 
@@ -59,7 +59,7 @@ function alterarTamanho() {
 }
 
 function diminuirTamanho() {
-  if (props.simulando || !props.editando || tam.value <= 1) return;
+  if (props.simulando || !props.editando || tam.value <= 3) return;
 
   tam.value--;
   alterarTamanho();
@@ -166,7 +166,7 @@ defineExpose({
 }
 
 .configuracao-titulo {
-  color: white;
+  color: #d20066;
   font-size: 14px;
   font-weight: 600;
 }
