@@ -17,6 +17,7 @@ const grade = ref(
   )
 );
 
+// altera celula
 function adicionarCelula(linha, coluna) {
   if (props.simulando || !props.editando) return;
 
@@ -24,6 +25,8 @@ function adicionarCelula(linha, coluna) {
   emit("alterada");
 }
 
+// retorna copia. O map percorre cada linha, executa [...] 
+// para criar uma nova linha e reúne os resultados em um novo array.
 function obterGrade() {
   return grade.value.map((linha) => [...linha]);
 }
@@ -224,8 +227,11 @@ defineExpose({
 
 .tabuleiro {
   display: grid;
+  /* Usa o menor valor entre 80% da largura da janela e 500 pixels. */
   width: min(80vw, 500px);
+  /* Mantém a largura e a altura iguais. */
   aspect-ratio: 1;
+  /* Define três pixels de espaço entre as células. */
   gap: 3px;
 }
 
