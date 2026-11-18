@@ -4,6 +4,7 @@ defineEmits(["click"]);
 
 <template>
   <div class="Button">
+  <!-- Usamos $emit diretamente no template para emitir o evento click. -->
     <button class="button-petri" type="button" @click="$emit('click')">
       <slot />
     </button>
