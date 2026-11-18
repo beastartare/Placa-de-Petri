@@ -1,22 +1,24 @@
 <script setup>
-import { ref, onBeforeUnmount } from "vue";
-import { evoluirGrade } from "./services/jogoService";
+import { ref, onBeforeUnmount } from "vue"; // função para criar referencias reativas (alteração atualiza automaticamente)
+import { evoluirGrade } from "./services/jogoService"; // Importa a função evoluirGrade do serviço jogoService
 
-import Grade from "./components/Grade.vue";
-import Button from "./components/Button.vue";
-import Metrics from "./components/Metrics.vue";
+import Grade from "./components/Grade.vue"; // Importa o componente Grade
+import Button from "./components/Button.vue"; // Importa o componente Button
+import Metrics from "./components/Metrics.vue"; // Importa o componente Metrics
 
-const gradeRef = ref(null);
-const simulando = ref(false);
-const mensagem = ref("");
-const editando = ref(true);
+// Referências reativas para o estado da aplicação
+const gradeRef = ref(null); //grade (inicialmente nula)
+const simulando = ref(false); // indica se a simulação está em andamento (inicia parado)
+const mensagem = ref(""); // mensagem de status ou erro (inicialmente vazia)
+const editando = ref(true); // indica se o usuário está editando a configuração da grade (inicia em modo de edição)
 
-let intervalo = null;
-let processando = false;
+let intervalo = null; //identificador de um intervalo
+let processando = false; // Indica se uma geração está sendo processada naquele momento.
 
-const numGeracoes = ref(0);
-const numCelulasVivas = ref(0);
+const numGeracoes = ref(0); // Contador de gerações (inicia em 0)
+const numCelulasVivas = ref(0); // Contador de células vivas (inicia em 0)
 
+// função para contar o número de células vivas na grade
 function contarCelulasVivas(grade) {
   let quantidade = 0;
 
@@ -31,95 +33,113 @@ function contarCelulasVivas(grade) {
   return quantidade;
 }
 
+// função para alterar a configuração da grade, resetando contadores e mensagens
 function alterarConfiguracao() {
   numGeracoes.value = 0;
   mensagem.value = "";
 
-  const gradeAtual = gradeRef.value.obterGrade();
+  const gradeAtual = gradeRef.value.obterGrade(); // retorna a grade atual
 
-  numCelulasVivas.value = contarCelulasVivas(gradeAtual);
+  numCelulasVivas.value = contarCelulasVivas(gradeAtual); // atualiza o contador de células vivas
 }
 
+// função para iniciar a edição da configuração da grade
 function editarConfiguracao() {
-  if (simulando.value) return;
+  if (simulando.value) return; // não permite editar se a simulação estiver em andamento
 
+  //seta os valores de editando e mensagem
   editando.value = true;
   mensagem.value = "";
 }
 
+//fnaliza modo de edição
 function finalizarEdicao() {
   editando.value = false;
 }
 
+// função para pausar a simulação
 function pausarSimulacao() {
-  clearInterval(intervalo);
-  intervalo = null;
-  simulando.value = false;
+  clearInterval(intervalo); // limpa o intervalo que estava executando a simulação
+  intervalo = null; // reseta o identificador do intervalo
+  simulando.value = false; // atualiza o estado da simulação para pausada
 }
 
+//função para reiniciar a simulação
 function reiniciarSimulacao() {
-  pausarSimulacao();
+  pausarSimulacao(); //pausa a simulação
 
-  const gradeAtual = gradeRef.value.obterGrade();
-  const gradeVazia = gradeAtual.map((linha) =>
-    linha.map(() => false)
-  );
+  const gradeAtual = gradeRef.value.obterGrade(); //obetem a grade atual
+  const gradeVazia = gradeAtual.map((linha) => linha.map(() => false)); //cria uma nova grade com todas as células mortas
 
-  gradeRef.value.atualizarGrade(gradeVazia);
+  gradeRef.value.atualizarGrade(gradeVazia); //atualiza a grade com a nova grade vazia
 
+  //reseta os contadores e mensagens
   numGeracoes.value = 0;
   numCelulasVivas.value = 0;
   mensagem.value = "";
   editando.value = true;
 }
 
+// função para executar a geração da simulação
 async function executarGeracao() {
+  // Se já estiver processando uma geração ou se estiver em modo de edição, não faz nada
   if (processando || editando.value) return;
 
-  processando = true;
+  processando = true; //inicia o processamento da geração
 
+  //tenta evoluir a grade e atualizar os contadores, tratando erros caso ocorram
   try {
-    const gradeAtual = gradeRef.value.obterGrade();
-    const proximaGrade = await evoluirGrade(gradeAtual);
-    gradeRef.value.atualizarGrade(proximaGrade);
+    const gradeAtual = gradeRef.value.obterGrade(); // obtém a grade atual
+    const proximaGrade = await evoluirGrade(gradeAtual); // chama a função evoluirGrade para obter a próxima geração da grade
+    gradeRef.value.atualizarGrade(proximaGrade); // atualiza a grade com a nova geração
 
-    numCelulasVivas.value = contarCelulasVivas(proximaGrade);
-    numGeracoes.value++;
+    numCelulasVivas.value = contarCelulasVivas(proximaGrade); // atualiza o contador de células vivas
+    numGeracoes.value++; // incrementa o contador de gerações
 
-    const existemCelulasVivas = proximaGrade.some(
-      (linha) => linha.some((celula) => celula)
+    // Verifica se ainda existem células vivas na próxima grade
+    const existemCelulasVivas = proximaGrade.some((linha) =>
+      linha.some((celula) => celula),
     );
 
+    // se nao houver, pausa a simulação e exibe mensagem
     if (!existemCelulasVivas) {
       pausarSimulacao();
-      mensagem.value ="A simulação foi encerrada: não há mais células vivas.";
+      mensagem.value = "A simulação foi encerrada: não há mais células vivas.";
     }
   } catch (erro) {
+    //tratamento de erros
     console.error("Erro na simulação:", erro);
     mensagem.value = "Ocorreu um erro ao evoluir a grade.";
-    pausarSimulacao();
+    pausarSimulacao(); // pausa a simulação
   } finally {
+    // garante que o processamento seja finalizado mesmo em caso de erro
     processando = false;
   }
 }
 
+// função para iniciar a simulação
 function iniciarSimulacao() {
+  //se já estiver simulando, pausa a simulação
   if (simulando.value) {
     pausarSimulacao();
     return;
   }
+  //se estiver em modo de edição, finaliza a edição antes de iniciar a simulação
   if (editando.value) {
     finalizarEdicao();
   }
 
+  //seta os valores
   simulando.value = true;
   mensagem.value = "";
 
+  //inicia o intervalo que executa a geração a cada 500ms
   intervalo = setInterval(() => {
     executarGeracao();
   }, 500);
 }
 
+// garante que o intervalo seja limpo quando o componente for destruído, evitando vazamentos de memória
 onBeforeUnmount(() => {
   clearInterval(intervalo);
 });
@@ -133,14 +153,21 @@ onBeforeUnmount(() => {
           <h1>Placa de Petri</h1>
           <p>Configure sua grade e observe a evolução das células.</p>
         </div>
-        <div class="status"
+        <div
+          class="status"
           :class="{
             ativo: simulando,
             editando: editando,
           }"
         >
           <span class="status-ponto"></span>
-          {{ simulando ? "Simulação ativa" : editando ? "Modo de edição" : "Simulação pausada"}}
+          {{
+            simulando
+              ? "Simulação ativa"
+              : editando
+                ? "Modo de edição"
+                : "Simulação pausada"
+          }}
         </div>
       </header>
 
@@ -166,7 +193,10 @@ onBeforeUnmount(() => {
             <p>Gerencie a simulação.</p>
           </div>
           <div class="metricas">
-            <Metrics :numGeracoes="numGeracoes" :numCelulasVivas="numCelulasVivas"/>
+            <Metrics
+              :numGeracoes="numGeracoes"
+              :numCelulasVivas="numCelulasVivas"
+            />
           </div>
           <div class="controles">
             <span class="titulo-controles">AÇÕES</span>
@@ -182,9 +212,7 @@ onBeforeUnmount(() => {
             <Button v-if="editando" @click="finalizarEdicao">
               Finalizar edição
             </Button>
-            <Button @click="reiniciarSimulacao">
-              Reiniciar
-            </Button>
+            <Button @click="reiniciarSimulacao"> Reiniciar </Button>
           </div>
         </aside>
       </div>
